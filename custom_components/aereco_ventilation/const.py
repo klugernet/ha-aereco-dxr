@@ -1,7 +1,7 @@
 """Constants for the Aereco Ventilation System integration."""
 
 DOMAIN = "aereco_ventilation"
-VERSION = "1.2.4"
+VERSION = "1.2.5"
 
 # Default values
 DEFAULT_PORT = 80

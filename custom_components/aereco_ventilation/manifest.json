@@ -1,7 +1,7 @@
 {
   "domain": "aereco_ventilation",
   "name": "Aereco DXR Ventilation System",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "config_flow": true,
   "documentation": "https://github.com/klugernet/ha-aereco-dxr",
   "issue_tracker": "https://github.com/klugernet/ha-aereco-dxr/issues",

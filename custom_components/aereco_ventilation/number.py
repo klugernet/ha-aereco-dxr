@@ -139,8 +139,14 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to current mode."""
+        import logging
+        _LOGGER = logging.getLogger(__name__)
+        
         current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        _LOGGER.debug(f"Hours timeout: Setting value {value} for mode {current_mode}")
+        
         if not current_mode or current_mode not in ["1", "2", "4"]:
+            _LOGGER.warning(f"Hours timeout: Invalid mode {current_mode}, expected 1, 2, or 4")
             return
             
         # Store the value for display
@@ -156,10 +162,15 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
         
         post_command = mode_timeout_commands.get(current_mode)
         if not post_command:
+            _LOGGER.error(f"Hours timeout: No POST command found for mode {current_mode}")
             return
             
+        _LOGGER.debug(f"Hours timeout: Sending POST command {post_command} with value {int(value)}")
+        
         # Send to settings.html
         success = await self.coordinator.api.set_mode_timeout_direct(post_command, int(value))
+        
+        _LOGGER.debug(f"Hours timeout: API call result: {success}")
         
         if success:
             await self.coordinator.async_request_refresh()
@@ -220,15 +231,25 @@ class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to Absence mode."""
+        import logging
+        _LOGGER = logging.getLogger(__name__)
+        
         current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        _LOGGER.debug(f"Days timeout: Setting value {value} for mode {current_mode}")
+        
         if current_mode != "3":  # Only for Absence mode
+            _LOGGER.warning(f"Days timeout: Invalid mode {current_mode}, expected 3 (Absence)")
             return
             
         # Store the value for display
         self._last_timeout_value = value
         
+        _LOGGER.debug(f"Days timeout: Sending POST command 06 with value {int(value)}")
+        
         # Send to settings.html (Absence timeout command)
         success = await self.coordinator.api.set_mode_timeout_direct("06", int(value))
+        
+        _LOGGER.debug(f"Days timeout: API call result: {success}")
         
         if success:
             await self.coordinator.async_request_refresh()
@@ -262,26 +283,27 @@ class AerecoSystemAirflowNumber(AerecoBaseNumber):
 
     @property
     def native_value(self) -> Optional[float]:
-        """Return the current value."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
-        modes_config = self.coordinator.data.get("modes_config")
+        """Return the current airflow value from the system."""
+        # Get current airflow from system data (this shows the actual current value)
+        current_mode_data = self.coordinator.data.get("current_mode")
+        if current_mode_data and "airflow" in current_mode_data:
+            return float(current_mode_data["airflow"])
         
-        if not modes_config:
-            # Return the default airflow for current mode, fallback to Automatic mode default
-            return DEFAULT_AIRFLOW_VALUES.get(current_mode, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
-            
-        config_key = f"{self._mode_key}_airflow"
-        stored_value = modes_config.get(config_key)
-        
-        if stored_value is not None:
-            return stored_value
-        else:
-            # No stored value, return default for current mode
-            return DEFAULT_AIRFLOW_VALUES.get(current_mode, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
+        # Fallback: return default for current mode if no data available
+        current_mode = current_mode_data.get("mode") if current_mode_data else None
+        return DEFAULT_AIRFLOW_VALUES.get(current_mode, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
 
     async def async_set_native_value(self, value: float) -> None:
-        """Set new value."""
+        """Set new airflow value."""
+        import logging
+        _LOGGER = logging.getLogger(__name__)
+        
+        _LOGGER.debug(f"System Airflow: Setting value {value}")
+        
         success = await self.coordinator.api.set_system_airflow(int(value))
+        
+        _LOGGER.debug(f"System Airflow: API call result: {success}")
+        
         if success:
             await self.coordinator.async_request_refresh()
 
