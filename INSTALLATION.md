@@ -1,35 +1,35 @@
-# Installation der Aereco HomeAssistant Integration
+# Installation of the Aereco HomeAssistant Integration
 
-Diese Anleitung führt dich durch die Installation und Einrichtung der Aereco Lüftungssystem Integration für Home Assistant.
+This guide will walk you through the installation and setup of the Aereco Ventilation System integration for Home Assistant.
 
-## Voraussetzungen
+## Prerequisites
 
-- Home Assistant 2023.1 oder neuer
-- Aereco DXR Lüftungssystem mit Netzwerk-Anschluss
-- Die IP-Adresse deines Aereco Systems
+- Home Assistant 2023.1 or newer
+- Aereco DXR ventilation system with network connection
+- The IP address of your Aereco system
 
-## Schritt 1: Integration installieren
+## Step 1: Install Integration
 
-### Option A: HACS (empfohlen)
-1. **HACS öffnen**: Gehe zu HACS > Integrations
-2. **Repository hinzufügen**:
-   - Klicke auf die drei Punkte (⋮) oben rechts
-   - Wähle "Custom repositories"
-   - URL: `https://github.com/your-username/aereco-homeassistant`
-   - Kategorie: "Integration"
-   - Klicke "ADD"
-3. **Integration installieren**:
-   - Suche nach "Aereco Ventilation System"
-   - Klicke "Download"
-   - Wähle die neueste Version
-4. **Home Assistant neustarten**
+### Option A: HACS (recommended)
+1. **Open HACS**: Go to HACS > Integrations
+2. **Add repository**:
+   - Click on the three dots (⋮) in the top right
+   - Select "Custom repositories"
+   - URL: `https://github.com/klugernet/ha-aereco-dxr`
+   - Category: "Integration"
+   - Click "ADD"
+3. **Install integration**:
+   - Search for "Aereco Ventilation System"
+   - Click "Download"
+   - Select the latest version
+4. **Restart Home Assistant**
 
-### Option B: Manuelle Installation
-1. **Dateien herunterladen**:
-   - Lade die neueste Release-Version herunter
-   - Oder clone das Repository: `git clone https://github.com/your-username/aereco-homeassistant.git`
+### Option B: Manual Installation
+1. **Download files**:
+   - Download the latest release version
+   - Or clone the repository: `git clone https://github.com/klugernet/ha-aereco-dxr.git`
 
-2. **Dateien kopieren**:
+2. **Copy files**:
    ```
    <config>/custom_components/aereco_ventilation/
    ├── __init__.py
@@ -45,78 +45,78 @@ Diese Anleitung führt dich durch die Installation und Einrichtung der Aereco L�
        └── de.json
    ```
 
-3. **Home Assistant neustarten**
+3. **Restart Home Assistant**
 
-## Schritt 2: IP-Adresse deines Aereco Systems finden
+## Step 2: Find IP Address of Your Aereco System
 
-### Methode 1: System-Display
-1. Navigiere am Aereco System zu den Netzwerk-Einstellungen
-2. Notiere dir die angezeigte IP-Adresse
+### Method 1: System Display
+1. Navigate to the network settings on your Aereco system
+2. Note the displayed IP address
 
-### Methode 2: Router-Interface
-1. Logge dich in deinen Router ein
-2. Suche in der DHCP-Client-Liste nach "Aereco" oder "DXR"
-3. Notiere dir die IP-Adresse
+### Method 2: Router Interface
+1. Log into your router
+2. Look in the DHCP client list for "Aereco" or "DXR"
+3. Note the IP address
 
-### Methode 3: Netzwerk-Scanner
-1. Verwende eine App wie "Fing" oder "Network Scanner"
-2. Scanne dein lokales Netzwerk
-3. Suche nach einem Gerät auf Port 80 mit HTTP-Server
+### Method 3: Network Scanner
+1. Use an app like "Fing" or "Network Scanner"
+2. Scan your local network
+3. Look for a device on port 80 with HTTP server
 
-### Methode 4: Kommandozeile (Windows)
+### Method 4: Command Line (Windows)
 ```cmd
-# Ping-Sweep für typische Router-Bereiche
+# Ping sweep for typical router ranges
 for /L %i in (1,1,254) do ping -n 1 -w 1000 192.168.1.%i | find "TTL"
 for /L %i in (1,1,254) do ping -n 1 -w 1000 192.168.0.%i | find "TTL"
 ```
 
-## Schritt 3: Integration konfigurieren
+## Step 3: Configure Integration
 
-1. **Integration hinzufügen**:
-   - Gehe zu "Einstellungen" > "Geräte & Dienste"
-   - Klicke auf "Integration hinzufügen"
-   - Suche nach "Aereco Ventilation System"
+1. **Add integration**:
+   - Go to "Settings" > "Devices & Services"
+   - Click on "Add Integration"
+   - Search for "Aereco Ventilation System"
 
-2. **Konfiguration eingeben**:
-   - **IP-Adresse**: Die IP-Adresse deines Aereco Systems (z.B. 192.168.1.100)
-   - **Port**: 80 (Standard HTTP-Port)
-   - **Aktualisierungsintervall**: 30 Sekunden (empfohlen)
+2. **Enter configuration**:
+   - **IP Address**: The IP address of your Aereco system (e.g. 192.168.1.100)
+   - **Port**: 80 (default HTTP port)
+   - **Update Interval**: 30 seconds (recommended)
 
-3. **Verbindung testen**:
-   - Klicke "Weiter"
-   - Die Integration testet automatisch die Verbindung
-   - Bei Erfolg wird das System hinzugefügt
+3. **Test connection**:
+   - Click "Next"
+   - The integration automatically tests the connection
+   - On success, the system will be added
 
-## Schritt 4: Entities überprüfen
+## Step 4: Check Entities
 
-Nach erfolgreicher Installation findest du folgende Entities:
+After successful installation, you will find the following entities:
 
 ### Fan Entity
 - `fan.aereco_ventilation_system`
-  - Hauptsteuerung des Lüftungssystems
-  - Unterstützt: Ein/Aus, Geschwindigkeit (%), Preset-Modi
+  - Main control of the ventilation system
+  - Supports: On/Off, Speed (%), Preset modes
 
 ### Select Entity  
 - `select.aereco_operation_mode`
-  - Direkte Modusauswahl
-  - Optionen: Automatik, Freikühlung, Boost, Abwesenheit, Stop
+  - Direct mode selection
+  - Options: Automatic, Free Cooling, Boost, Absence, Stop
 
 ### Sensor Entities
-- `sensor.aereco_airflow` - Aktueller Luftstrom (m³/h)
-- `sensor.aereco_filter_level` - Filter-Verstopfungsgrad (%)
-- `sensor.aereco_timeout` - Aktuelles Modus-Timeout
+- `sensor.aereco_airflow` - Current airflow (m³/h)
+- `sensor.aereco_filter_level` - Filter clogging level (%)
+- `sensor.aereco_timeout` - Current mode timeout
 
-### Raum-Sensoren (automatisch erkannt)
-- `sensor.RAUMNAME_co2` - CO2-Gehalt (ppm)
-- `sensor.RAUMNAME_humidity` - Luftfeuchtigkeit
-- `sensor.RAUMNAME_temperature` - Temperatur (°C/°F)
+### Room Sensors (automatically detected)
+- `sensor.ROOMNAME_co2` - CO2 level (ppm)
+- `sensor.ROOMNAME_humidity` - Humidity
+- `sensor.ROOMNAME_temperature` - Temperature (°C/°F)
 
-## Schritt 5: Dashboard einrichten
+## Step 5: Setup Dashboard
 
-### Basis-Karte
+### Basic Card
 ```yaml
 type: entities
-title: Lüftung
+title: Ventilation
 entities:
   - fan.aereco_ventilation_system
   - select.aereco_operation_mode
@@ -124,7 +124,7 @@ entities:
   - sensor.aereco_filter_level
 ```
 
-### Erweiterte Steuerung
+### Advanced Control
 ```yaml
 type: horizontal-stack
 cards:
@@ -132,20 +132,20 @@ cards:
     entity: fan.aereco_ventilation_system
   - type: entity
     entity: select.aereco_operation_mode
-    name: Modus
+    name: Mode
 ```
 
-### Sensor-Übersicht
+### Sensor Overview
 ```yaml
 type: grid
 columns: 2
 square: false
 cards:
   - type: sensor
-    entity: sensor.wohnzimmer_co2
+    entity: sensor.living_room_co2
     graph: line
   - type: sensor  
-    entity: sensor.schlafzimmer_temperature
+    entity: sensor.bedroom_temperature
     graph: line
   - type: gauge
     entity: sensor.aereco_filter_level
@@ -177,11 +177,11 @@ Häufige Probleme:
 - **Netzwerk**: HA und Aereco müssen im gleichen Netzwerk sein
 
 ### Sensoren fehlen
-- **Warten**: Sensor-Erkennung kann bis zu 5 Minuten dauern
-- **Neustart**: Starte die Integration neu über "Geräte & Dienste"
-- **Sensor-Konfiguration**: Prüfe die Sensor-Konfiguration am Aereco System
+- **Wait**: Sensor detection can take up to 5 minutes
+- **Restart**: Restart the integration via "Devices & Services"
+- **Sensor configuration**: Check sensor configuration on the Aereco system
 
-### Debug-Logging aktivieren
+### Enable Debug Logging
 ```yaml
 # configuration.yaml
 logger:
@@ -191,18 +191,18 @@ logger:
     custom_components.aereco_ventilation.api: debug
 ```
 
-## Nächste Schritte
+## Next Steps
 
-1. **Automatisierungen**: Erstelle Automatisierungen basierend auf CO2-Werten oder Tageszeiten
-2. **Benachrichtigungen**: Richte Benachrichtigungen für Filterwarnungen ein  
-3. **Energiemonitoring**: Überwache den Energieverbrauch des Systems
-4. **Dashboard**: Gestalte dein Dashboard nach deinen Wünschen
+1. **Automations**: Create automations based on CO2 values or time schedules
+2. **Notifications**: Set up notifications for filter warnings  
+3. **Energy monitoring**: Monitor the system's energy consumption
+4. **Dashboard**: Customize your dashboard to your preferences
 
-## Support erhalten
+## Get Support
 
-- 📚 **Dokumentation**: Lies die vollständige README.md
-- 🐛 **Issues**: Melde Probleme auf GitHub
-- 💬 **Community**: Stelle Fragen im Home Assistant Forum
-- 🚀 **Updates**: Halte die Integration über HACS aktuell
+- 📚 **Documentation**: Read the complete README.md
+- 🐛 **Issues**: Report problems on GitHub
+- 💬 **Community**: Ask questions in the Home Assistant forum
+- 🚀 **Updates**: Keep the integration up to date via HACS
 
-Viel Erfolg mit deiner neuen Aereco Integration! 🌬️
+Good luck with your new Aereco integration! 🌬️

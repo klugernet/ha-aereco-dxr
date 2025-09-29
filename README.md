@@ -1,76 +1,76 @@
 # Aereco Ventilation System - Home Assistant Integration
 
-Diese Home Assistant Integration ermöglicht es, ein Aereco Lüftungssystem (DXR) über Home Assistant zu steuern und zu überwachen.
+This Home Assistant integration allows you to control and monitor an Aereco ventilation system (DXR) through Home Assistant.
 
-## Funktionen
+## Features
 
-### 🌬️ Lüftungssteuerung
-- **Fan Entity**: Vollständige Steuerung des Lüftungssystems als Fan-Entity
-- **Betriebsmodi**: Automatik, Freikühlung, Boost, Abwesenheit, Stop
-- **Geschwindigkeitskontrolle**: Prozentuale Geschwindigkeitssteuerung
-- **Preset-Modi**: Schnelle Modusumschaltung über Preset-Funktionen
+### 🌬️ Ventilation Control
+- **Fan Entity**: Complete control of the ventilation system as a fan entity
+- **Operation Modes**: Automatic, Free Cooling, Boost, Absence, Stop
+- **Speed Control**: Percentage-based speed control
+- **Preset Modes**: Quick mode switching via preset functions
 
-### 📊 Sensoren
-- **System-Sensoren**:
-  - Luftstrom (m³/h)
-  - Filter-Verstopfungsgrad (%)
-  - Modus-Timeout (min/h/d)
+### 📊 Sensors
+- **System Sensors**:
+  - Airflow (m³/h)
+  - Filter clogging level (%)
+  - Mode timeout (min/h/d)
   
-- **Raum-Sensoren** (automatisch erkannt):
-  - CO2-Sensoren (ppm)
-  - Luftfeuchtigkeit-Sensoren
-  - Temperatursensoren pro Raum (°C/°F)
+- **Room Sensors** (automatically detected):
+  - CO2 sensors (ppm)
+  - Humidity sensors
+  - Temperature sensors per room (°C/°F)
 
-### ⚙️ Erweiterte Steuerung
-- **Select Entity**: Direkte Modusauswahl
-- **Wartungsinfos**: Filter-Status, Bypass-Ventil, Vorheizer-Level
-- **Warnungen**: Automatische Anzeige von Systemwarnungen
+### ⚙️ Advanced Control
+- **Select Entity**: Direct mode selection
+- **Maintenance Info**: Filter status, bypass valve, preheater level
+- **Warnings**: Automatic display of system warnings
 
 ## Installation
 
-### HACS (empfohlen)
-1. Öffne HACS in Home Assistant
-2. Gehe zu "Integrations"
-3. Klicke auf die drei Punkte oben rechts und wähle "Custom repositories"
-4. Füge diese Repository-URL hinzu: `https://github.com/your-username/aereco-homeassistant`
-5. Wähle die Kategorie "Integration"
-6. Suche nach "Aereco Ventilation System" und installiere es
-7. Starte Home Assistant neu
+### HACS (recommended)
+1. Open HACS in Home Assistant
+2. Go to "Integrations"
+3. Click on the three dots in the top right and select "Custom repositories"
+4. Add this repository URL: `https://github.com/klugernet/ha-aereco-dxr`
+5. Select the category "Integration"
+6. Search for "Aereco Ventilation System" and install it
+7. Restart Home Assistant
 
-### Manuelle Installation
-1. Kopiere den `custom_components/aereco_ventilation` Ordner in das `custom_components` Verzeichnis deiner Home Assistant Installation
-2. Starte Home Assistant neu
-3. Gehe zu "Einstellungen" > "Geräte & Dienste"
-4. Klicke auf "Integration hinzufügen"
-5. Suche nach "Aereco Ventilation System"
+### Manual Installation
+1. Copy the `custom_components/aereco_ventilation` folder into the `custom_components` directory of your Home Assistant installation
+2. Restart Home Assistant
+3. Go to "Settings" > "Devices & Services"
+4. Click on "Add Integration"
+5. Search for "Aereco Ventilation System"
 
-## Konfiguration
+## Configuration
 
-### Erstmalige Einrichtung
-1. Gehe zu "Einstellungen" > "Geräte & Dienste"
-2. Klicke auf "Integration hinzufügen"
-3. Suche nach "Aereco Ventilation System"
-4. Gib die erforderlichen Informationen ein:
-   - **IP-Adresse**: Die IP-Adresse deines Aereco Systems
-   - **Port**: Port für HTTP-Kommunikation (Standard: 80)
-   - **Aktualisierungsintervall**: Wie oft Daten abgerufen werden sollen (Standard: 30 Sekunden)
+### Initial Setup
+1. Go to "Settings" > "Devices & Services"
+2. Click on "Add Integration"
+3. Search for "Aereco Ventilation System"
+4. Enter the required information:
+   - **IP Address**: The IP address of your Aereco system
+   - **Port**: Port for HTTP communication (default: 80)
+   - **Update Interval**: How often data should be fetched (default: 30 seconds)
 
-### Ermittlung der IP-Adresse
-Du kannst die IP-Adresse deines Aereco Systems folgendermaßen finden:
-- Prüfe die Netzwerk-Einstellungen am System-Display
-- Verwende einen Netzwerk-Scanner wie "Fing" oder "Network Scanner"
-- Prüfe die DHCP-Client-Liste deines Routers
+### Finding the IP Address
+You can find the IP address of your Aereco system as follows:
+- Check the network settings on the system display
+- Use a network scanner like "Fing" or "Network Scanner"
+- Check your router's DHCP client list
 
-## Verwendung
+## Usage
 
-### Als Lüfter steuern
+### Control as Fan
 ```yaml
-# Beispiel-Automatisierung: Boost-Modus beim Kochen
+# Example automation: Boost mode when cooking
 automation:
-  - alias: "Küche Boost beim Kochen"
+  - alias: "Kitchen Boost When Cooking"
     trigger:
       - platform: state
-        entity_id: binary_sensor.kueche_bewegung
+        entity_id: binary_sensor.kitchen_motion
         to: 'on'
     condition:
       - condition: time
@@ -84,14 +84,14 @@ automation:
           preset_mode: "Boost"
 ```
 
-### Modusauswahl verwenden
+### Using Mode Selection
 ```yaml
-# Beispiel: Abwesenheitsmodus bei Urlaub aktivieren
+# Example: Activate absence mode during vacation
 automation:
-  - alias: "Urlaub Lüftung"
+  - alias: "Vacation Ventilation"
     trigger:
       - platform: state
-        entity_id: input_boolean.urlaub
+        entity_id: input_boolean.vacation
         to: 'on'
     action:
       - service: select.select_option
@@ -101,57 +101,57 @@ automation:
           option: "Absence"
 ```
 
-### Sensoren überwachen
+### Monitor Sensors
 ```yaml
-# Beispiel: Warnung bei hohem CO2-Gehalt
+# Example: Warning for high CO2 levels
 automation:
-  - alias: "CO2 Warnung"
+  - alias: "CO2 Warning"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.wohnzimmer_co2
+        entity_id: sensor.living_room_co2
         above: 1000
     action:
-      - service: notify.mobile_app_mein_handy
+      - service: notify.mobile_app_my_phone
         data:
-          message: "CO2-Gehalt im Wohnzimmer zu hoch: {{ states('sensor.wohnzimmer_co2') }} ppm"
+          message: "CO2 level in living room too high: {{ states('sensor.living_room_co2') }} ppm"
 ```
 
-## Unterstützte Geräte
+## Supported Devices
 
-Diese Integration wurde entwickelt und getestet mit:
-- **Aereco DXR** Lüftungssystemen
-- Firmware-Versionen: Alle gängigen Versionen
-- Sensor-Typen: CO2, Luftfeuchtigkeit (PYRO), Temperatur
+This integration was developed and tested with:
+- **Aereco DXR** ventilation systems
+- Firmware versions: All common versions
+- Sensor types: CO2, Humidity (PYRO), Temperature
 
-## API-Referenz
+## API Reference
 
-Die Integration basiert auf der HTTP-API des Aereco Systems:
+The integration is based on the HTTP API of the Aereco system:
 
-### GET-Befehle
-- `00`: Warnungen abrufen
-- `02`: Aktueller Betriebsmodus
-- `05`: Wartungsdaten  
-- `06`: Sensor-Daten
-- `11`: System-Version
-- `13`: Temperatur-Einheit
+### GET Commands
+- `00`: Get warnings
+- `02`: Current operation mode
+- `05`: Maintenance data  
+- `06`: Sensor data
+- `11`: System version
+- `13`: Temperature unit
 
-### POST-Befehle
-- `15`: Betriebsmodus setzen (0=Auto, 1=Free Cooling, 2=Boost, 3=Absence, 4=Stop)
+### POST Commands
+- `15`: Set operation mode (0=Auto, 1=Free Cooling, 2=Boost, 3=Absence, 4=Stop)
 
-## Fehlerbehebung
+## Troubleshooting
 
-### Verbindungsprobleme
-- **Prüfe die IP-Adresse**: Stelle sicher, dass die IP-Adresse korrekt ist
-- **Netzwerk-Konnektivität**: Teste die Verbindung mit `ping <IP-Adresse>`
-- **Firewall**: Prüfe, ob Port 80 zwischen Home Assistant und dem Aereco System offen ist
+### Connection Issues
+- **Check IP Address**: Make sure the IP address is correct
+- **Network Connectivity**: Test the connection with `ping <IP-address>`
+- **Firewall**: Check if port 80 is open between Home Assistant and the Aereco system
 
-### Keine Sensoren sichtbar
-- **Sensor-Erkennung**: Es kann einige Minuten dauern, bis alle Sensoren erkannt werden
-- **Raum-Namen**: Konfiguriere Raum-Namen am Aereco System für bessere Anzeige
-- **Sensor-Typen**: Nicht alle Sensor-Slots müssen belegt sein
+### No Sensors Visible
+- **Sensor Detection**: It may take a few minutes for all sensors to be detected
+- **Room Names**: Configure room names on the Aereco system for better display
+- **Sensor Types**: Not all sensor slots need to be occupied
 
-### Logs prüfen
-Aktiviere Debug-Logging für detailliertere Informationen:
+### Check Logs
+Enable debug logging for more detailed information:
 
 ```yaml
 logger:
@@ -163,35 +163,35 @@ logger:
 ## Changelog
 
 ### Version 1.0.0
-- ✨ Erste Veröffentlichung
-- 🌬️ Fan Entity mit vollständiger Steuerung
-- 📊 Sensor-Unterstützung für CO2, Luftfeuchtigkeit, Temperatur
-- ⚙️ Select Entity für Modusauswahl
-- 🌍 Deutsche Übersetzung
-- 📝 Umfassende Dokumentation
+- ✨ Initial release
+- 🌬️ Fan entity with complete control
+- 📊 Sensor support for CO2, humidity, temperature
+- ⚙️ Select entity for mode selection
+- 🌍 German translation
+- 📝 Comprehensive documentation
 
-## Mitwirken
+## Contributing
 
-Beiträge sind willkommen! Bitte:
-1. Forke dieses Repository
-2. Erstelle einen Feature-Branch (`git checkout -b feature/AmazingFeature`)
-3. Committe deine Änderungen (`git commit -m 'Add some AmazingFeature'`)
-4. Push zum Branch (`git push origin feature/AmazingFeature`)
-5. Öffne einen Pull Request
+Contributions are welcome! Please:
+1. Fork this repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Lizenz
+## License
 
-Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe die [LICENSE](LICENSE) Datei für Details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-Bei Problemen oder Fragen:
-- 🐛 **Issues**: [GitHub Issues](https://github.com/your-username/aereco-homeassistant/issues)
+For issues or questions:
+- 🐛 **Issues**: [GitHub Issues](https://github.com/klugernet/ha-aereco-dxr/issues)
 - 💬 **Community**: [Home Assistant Community](https://community.home-assistant.io/)
-- 📧 **E-Mail**: your-email@example.com
+- 📧 **Email**: your-email@example.com
 
 ## Credits
 
-Entwickelt mit ❤️ für die Home Assistant Community.
+Developed with ❤️ for the Home Assistant Community.
 
-Basierend auf der Analyse der originalen Aereco Web-Anwendung.
+Based on analysis of the original Aereco web application.

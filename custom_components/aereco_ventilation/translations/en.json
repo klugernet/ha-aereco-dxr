@@ -1,0 +1,53 @@
+{
+  "config_flow": {
+    "step": {
+      "user": {
+        "title": "Aereco Ventilation System Setup",
+        "description": "Configure your Aereco ventilation system",
+        "data": {
+          "host": "IP Address",
+          "port": "Port", 
+          "update_interval": "Update Interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the system",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "System is already configured"
+    }
+  },
+  "entity": {
+    "fan": {
+      "ventilation_system": {
+        "name": "Ventilation System"
+      }
+    },
+    "sensor": {
+      "airflow": {
+        "name": "Airflow"
+      },
+      "filter_level": {
+        "name": "Filter Clogging Level"
+      },
+      "timeout": {
+        "name": "Mode Timeout"
+      }
+    },
+    "select": {
+      "operation_mode": {
+        "name": "Operation Mode",
+        "state": {
+          "automatic": "Automatic",
+          "free_cooling": "Free Cooling",
+          "boost": "Boost",
+          "absence": "Absence",
+          "stop": "Stop"
+        }
+      }
+    }
+  }
+}

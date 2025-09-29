@@ -1,14 +1,15 @@
 {
   "domain": "aereco_ventilation",
-  "name": "Aereco Ventilation System",
+  "name": "Aereco DXR Ventilation System",
   "version": "1.0.0",
   "config_flow": true,
-  "documentation": "https://github.com/your-username/aereco-homeassistant",
+  "documentation": "https://github.com/klugernet/ha-aereco-dxr",
+  "issue_tracker": "https://github.com/klugernet/ha-aereco-dxr/issues",
   "requirements": [],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},
   "dependencies": [],
-  "codeowners": ["@your-username"],
+  "codeowners": ["@klugernet"],
   "iot_class": "local_polling"
 }
