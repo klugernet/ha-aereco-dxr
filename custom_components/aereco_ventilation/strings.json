@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Aereco Ventilation System Setup",
+        "description": "Configure your Aereco ventilation system",
+        "data": {
+          "host": "IP Address",
+          "port": "Port", 
+          "update_interval": "Update Interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the system",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "System is already configured"
+    }
+  }
+}

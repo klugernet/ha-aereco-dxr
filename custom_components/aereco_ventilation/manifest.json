@@ -1,0 +1,14 @@
+{
+  "domain": "aereco_ventilation",
+  "name": "Aereco Ventilation System",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "https://github.com/your-username/aereco-homeassistant",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": ["@your-username"],
+  "iot_class": "local_polling"
+}

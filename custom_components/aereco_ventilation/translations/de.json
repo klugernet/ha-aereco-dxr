@@ -1,0 +1,53 @@
+{
+  "config_flow": {
+    "step": {
+      "user": {
+        "title": "Aereco Lüftungssystem Einrichtung",
+        "description": "Konfigurieren Sie Ihr Aereco Lüftungssystem",
+        "data": {
+          "host": "IP-Adresse",
+          "port": "Port", 
+          "update_interval": "Aktualisierungsintervall (Sekunden)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum System fehlgeschlagen",
+      "invalid_auth": "Ungültige Authentifizierung",
+      "unknown": "Unerwarteter Fehler aufgetreten"
+    },
+    "abort": {
+      "already_configured": "System ist bereits konfiguriert"
+    }
+  },
+  "entity": {
+    "fan": {
+      "ventilation_system": {
+        "name": "Lüftungssystem"
+      }
+    },
+    "sensor": {
+      "airflow": {
+        "name": "Luftstrom"
+      },
+      "filter_level": {
+        "name": "Filter-Verstopfungsgrad"
+      },
+      "timeout": {
+        "name": "Modus-Timeout"
+      }
+    },
+    "select": {
+      "operation_mode": {
+        "name": "Betriebsmodus",
+        "state": {
+          "automatic": "Automatik",
+          "free_cooling": "Freikühlung",
+          "boost": "Boost",
+          "absence": "Abwesenheit",
+          "stop": "Stop"
+        }
+      }
+    }
+  }
+}
