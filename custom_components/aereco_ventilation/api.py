@@ -106,7 +106,7 @@ class AerecoAPI:
                 success = response.status == 200
                 
                 _LOGGER.debug(f"POST {command} response status: {response.status}")
-                _LOGGER.debug(f"POST {command} response text: {response_text[:100]}...")  # First 100 chars
+                _LOGGER.debug(f"POST {command} response text: {response_text[:100] if response_text else 'No content'}...")  # First 100 chars
                 
                 if success:
                     _LOGGER.debug(f"POST {command} successful")
