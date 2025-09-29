@@ -104,14 +104,10 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
 
     @property
     def available(self) -> bool:
-        """Return if entity is available - only for modes that use hours."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
-        # Available for Free Cooling, Boost, Stop modes (not Absence or Automatic)
-        hours_modes = ["1", "2", "4"]  # Free Cooling, Boost, Stop
+        """Return if entity is available."""
         return (
             self.coordinator.last_update_success and 
-            self.coordinator.data is not None and
-            current_mode in hours_modes
+            self.coordinator.data is not None
         )
 
     @property
@@ -198,13 +194,10 @@ class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
 
     @property
     def available(self) -> bool:
-        """Return if entity is available - only for Absence mode."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
-        # Available only for Absence mode
+        """Return if entity is available."""
         return (
             self.coordinator.last_update_success and 
-            self.coordinator.data is not None and
-            current_mode == "3"  # Absence mode
+            self.coordinator.data is not None
         )
 
     @property
@@ -270,13 +263,21 @@ class AerecoSystemAirflowNumber(AerecoBaseNumber):
     @property
     def native_value(self) -> Optional[float]:
         """Return the current value."""
+        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
         modes_config = self.coordinator.data.get("modes_config")
+        
         if not modes_config:
-            # Return the default system airflow (Automatic mode default)
-            return DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60)
+            # Return the default airflow for current mode, fallback to Automatic mode default
+            return DEFAULT_AIRFLOW_VALUES.get(current_mode, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
             
         config_key = f"{self._mode_key}_airflow"
-        return modes_config.get(config_key, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
+        stored_value = modes_config.get(config_key)
+        
+        if stored_value is not None:
+            return stored_value
+        else:
+            # No stored value, return default for current mode
+            return DEFAULT_AIRFLOW_VALUES.get(current_mode, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
 
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
