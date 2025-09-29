@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Preset modes (Automatic, Free Cooling, Boost, Absence, Stop)
 - **Sensor Entities**: Comprehensive monitoring
   - System sensors (airflow, filter level, timeout)
-  - Room sensors (CO2, humidity, temperature)
+  - Room sensors (CO2, temperature)
   - Automatic sensor detection and room naming
 - **Select Entity**: Direct operation mode selection
 - **API Integration**: HTTP-based communication with Aereco DXR systems

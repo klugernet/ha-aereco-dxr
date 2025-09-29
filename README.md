@@ -18,7 +18,6 @@ This Home Assistant integration allows you to control and monitor an Aereco vent
   
 - **Room Sensors** (automatically detected):
   - CO2 sensors (ppm)
-  - Humidity sensors
   - Temperature sensors per room (°C/°F)
 
 ### ⚙️ Advanced Control
@@ -141,7 +140,7 @@ automation:
 This integration was developed and tested with:
 - **Aereco DXR** ventilation systems
 - Firmware versions: All common versions
-- Sensor types: CO2, Humidity (PYRO), Temperature
+- Sensor types: CO2, Temperature
 
 ## API Reference
 
@@ -192,7 +191,7 @@ logger:
 ### Version 1.0.0
 - ✨ Initial release
 - 🌬️ Fan entity with complete control
-- 📊 Sensor support for CO2, humidity, temperature
+- 📊 Sensor support for CO2 and temperature
 - ⚙️ Select entity for mode selection
 - 🌍 German translation
 - 📝 Comprehensive documentation
