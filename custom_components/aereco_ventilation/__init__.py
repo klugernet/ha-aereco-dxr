@@ -14,7 +14,7 @@ from .api import AerecoAPI
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.FAN, Platform.SENSOR, Platform.SELECT]
+PLATFORMS = [Platform.FAN, Platform.SENSOR, Platform.SELECT, Platform.NUMBER]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -73,12 +73,14 @@ class AerecoDataUpdateCoordinator(DataUpdateCoordinator):
             sensors_data = await self.api.get_sensors()
             warnings_data = await self.api.get_warnings()
             maintenance_data = await self.api.get_maintenance_section()
+            modes_config_data = await self.api.get_operation_modes_config()
             
             return {
                 "current_mode": current_mode_data,
                 "sensors": sensors_data,
                 "warnings": warnings_data,
                 "maintenance": maintenance_data,
+                "modes_config": modes_config_data,
             }
         except Exception as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err

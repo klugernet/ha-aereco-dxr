@@ -23,6 +23,9 @@ This Home Assistant integration allows you to control and monitor an Aereco vent
 
 ### ⚙️ Advanced Control
 - **Select Entity**: Direct mode selection
+- **Number Entities**: Mode timeout and airflow configuration
+  - Timeout settings for Free Cooling, Boost, Absence, Stop modes
+  - Airflow settings for all operation modes
 - **Maintenance Info**: Filter status, bypass valve, preheater level
 - **Warnings**: Automatic display of system warnings
 
@@ -101,6 +104,23 @@ automation:
           option: "Absence"
 ```
 
+### Using Mode Configuration
+```yaml
+# Example: Set boost mode to run for 15 minutes with high airflow
+automation:
+  - alias: "Configure Boost Mode"
+    action:
+      - service: number.set_value
+        target:
+          entity_id: number.aereco_boost_timeout
+        data:
+          value: 15
+      - service: number.set_value
+        target:
+          entity_id: number.aereco_boost_airflow
+        data:
+          value: 400
+```
 ### Monitor Sensors
 ```yaml
 # Example: Warning for high CO2 levels
@@ -161,6 +181,13 @@ logger:
 ```
 
 ## Changelog
+
+### Version 1.1.0
+- 🆕 **Number Entities**: Mode timeout and airflow configuration
+- ⚙️ **Advanced Settings**: Configure duration and airflow for each mode
+- 🎛️ **Dashboard Controls**: Slider controls for all mode parameters
+- 🌍 **Enhanced API**: Extended API with mode configuration methods
+- 📝 **Updated Documentation**: Examples for mode configuration
 
 ### Version 1.0.0
 - ✨ Initial release

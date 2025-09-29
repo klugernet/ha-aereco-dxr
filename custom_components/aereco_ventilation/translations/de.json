@@ -48,6 +48,35 @@
           "stop": "Stop"
         }
       }
+    },
+    "number": {
+      "free_cooling_timeout": {
+        "name": "Freikühlung Timeout"
+      },
+      "boost_timeout": {
+        "name": "Boost-Modus Timeout"
+      },
+      "absence_timeout": {
+        "name": "Abwesenheit Timeout"
+      },
+      "stop_timeout": {
+        "name": "Stop-Modus Timeout"
+      },
+      "automatic_airflow": {
+        "name": "Automatik Luftmenge"
+      },
+      "free_cooling_airflow": {
+        "name": "Freikühlung Luftmenge"
+      },
+      "boost_airflow": {
+        "name": "Boost-Modus Luftmenge"
+      },
+      "absence_airflow": {
+        "name": "Abwesenheit Luftmenge"
+      },
+      "stop_airflow": {
+        "name": "Stop-Modus Luftmenge"
+      }
     }
   }
 }

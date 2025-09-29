@@ -111,6 +111,17 @@ After successful installation, you will find the following entities:
 - `sensor.ROOMNAME_humidity` - Humidity
 - `sensor.ROOMNAME_temperature` - Temperature (°C/°F)
 
+### Number Entities (Mode Configuration)
+- `number.aereco_free_cooling_timeout` - Free Cooling timeout (minutes)
+- `number.aereco_boost_timeout` - Boost mode timeout (minutes)
+- `number.aereco_absence_timeout` - Absence mode timeout (minutes)
+- `number.aereco_stop_timeout` - Stop mode timeout (minutes)
+- `number.aereco_automatic_airflow` - Automatic mode airflow (m³/h)
+- `number.aereco_free_cooling_airflow` - Free Cooling airflow (m³/h)
+- `number.aereco_boost_airflow` - Boost mode airflow (m³/h)
+- `number.aereco_absence_airflow` - Absence mode airflow (m³/h)
+- `number.aereco_stop_airflow` - Stop mode airflow (m³/h)
+
 ## Step 5: Setup Dashboard
 
 ### Basic Card
@@ -155,6 +166,24 @@ cards:
       green: 0
       yellow: 60
       red: 80
+```
+
+### Mode Configuration Panel
+```yaml
+type: entities
+title: Mode Settings
+entities:
+  - type: section
+    label: Timeout Settings
+  - entity: number.aereco_free_cooling_timeout
+  - entity: number.aereco_boost_timeout
+  - entity: number.aereco_absence_timeout
+  - type: section
+    label: Airflow Settings
+  - entity: number.aereco_automatic_airflow
+  - entity: number.aereco_free_cooling_airflow
+  - entity: number.aereco_boost_airflow
+  - entity: number.aereco_absence_airflow
 ```
 
 ## Fehlerbehebung

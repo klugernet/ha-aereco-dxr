@@ -48,6 +48,35 @@
           "stop": "Stop"
         }
       }
+    },
+    "number": {
+      "free_cooling_timeout": {
+        "name": "Free Cooling Timeout"
+      },
+      "boost_timeout": {
+        "name": "Boost Mode Timeout"
+      },
+      "absence_timeout": {
+        "name": "Absence Mode Timeout"
+      },
+      "stop_timeout": {
+        "name": "Stop Mode Timeout"
+      },
+      "automatic_airflow": {
+        "name": "Automatic Mode Airflow"
+      },
+      "free_cooling_airflow": {
+        "name": "Free Cooling Airflow"
+      },
+      "boost_airflow": {
+        "name": "Boost Mode Airflow"
+      },
+      "absence_airflow": {
+        "name": "Absence Mode Airflow"
+      },
+      "stop_airflow": {
+        "name": "Stop Mode Airflow"
+      }
     }
   }
 }

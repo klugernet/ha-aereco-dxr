@@ -237,3 +237,58 @@ class AerecoAPI:
             return result is not None
         except Exception:
             return False
+
+    async def get_operation_modes_config(self) -> Optional[Dict[str, Any]]:
+        """Get operation modes configuration (timeouts and airflows)."""
+        result = await self._get_command(GET_OPERATION_MODES_CONFIG)
+        if not result:
+            return None
+
+        # Convert hex data to configuration values
+        data = self._convert_hex_stream_to_array(result)
+        if len(data) < 10:  # Need at least 10 bytes for basic config
+            return None
+
+        return {
+            "automatic_airflow": data[0] if len(data) > 0 else 0,
+            "free_cooling_timeout": data[1] if len(data) > 1 else 60,
+            "free_cooling_airflow": data[2] if len(data) > 2 else 0,
+            "boost_timeout": data[3] if len(data) > 3 else 30,
+            "boost_airflow": data[4] if len(data) > 4 else 0,
+            "absence_timeout": data[5] if len(data) > 5 else 480,
+            "absence_airflow": data[6] if len(data) > 6 else 0,
+            "stop_timeout": data[7] if len(data) > 7 else 0,
+            "stop_airflow": data[8] if len(data) > 8 else 0,
+            "raw_data": result
+        }
+
+    async def set_mode_timeout(self, mode: str, timeout: int) -> bool:
+        """Set timeout for a specific mode."""
+        mode_timeout_commands = {
+            "free_cooling": POST_FREE_COOLING_MODE_TIMEOUT,
+            "boost": POST_BOOST_MODE_TIMEOUT,
+            "absence": POST_ABSENCE_MODE_TIMEOUT,
+            "stop": POST_STOP_MODE_TIMEOUT,
+        }
+        
+        command = mode_timeout_commands.get(mode)
+        if not command:
+            return False
+            
+        return await self._post_command(command, str(timeout))
+
+    async def set_mode_airflow(self, mode: str, airflow: int) -> bool:
+        """Set airflow for a specific mode."""
+        mode_airflow_commands = {
+            "automatic": POST_AUTOMATIC_MODE_AIRFLOW,
+            "free_cooling": POST_FREE_COOLING_MODE_AIRFLW,
+            "boost": POST_BOOST_MODE_AIRFLOW,
+            "absence": POST_ABSENCE_MODE_AIRFLOW,
+            "stop": POST_STOP_MODE_AIRFLOW,
+        }
+        
+        command = mode_airflow_commands.get(mode)
+        if not command:
+            return False
+            
+        return await self._post_command(command, str(airflow))

@@ -8,7 +8,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import AerecoDataUpdateCoordinator
-from .const import DOMAIN, MODE_NAMES, MODE_AUTOMATIC, MODE_BOOST, MODE_STOP, MODE_ABSENCE, MODE_FREE_COOLING
+from .const import DOMAIN, MODE_NAMES, MODE_AUTOMATIC, MODE_BOOST, MODE_STOP, MODE_ABSENCE, MODE_FREE_COOLING, VERSION
 
 
 async def async_setup_entry(
@@ -39,6 +39,7 @@ class AerecoFan(CoordinatorEntity, FanEntity):
             "name": "Aereco Ventilation System",
             "manufacturer": "Aereco",
             "model": "DXR",
+            "sw_version": VERSION,
         }
 
     @property
