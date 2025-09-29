@@ -116,6 +116,11 @@ class AerecoSystemSensor(AerecoBaseSensor):
         if self._sensor_key == "timeout":
             mode_data = self.coordinator.data.get("current_mode", {})
             timeout_unit = mode_data.get("timeout_unit", 1)  # Default to minutes
+            current_mode_num = mode_data.get("current_mode")
+            
+            # Special handling for Absence mode - show days even though system uses hours unit
+            if current_mode_num == 3 and timeout_unit == 2:  # Absence mode with hours unit
+                return "d"  # Display as days
             
             unit_map = {0: "s", 1: "min", 2: "h", 3: "d"}
             return unit_map.get(timeout_unit, "min")
@@ -136,6 +141,7 @@ class AerecoSystemSensor(AerecoBaseSensor):
         elif self._sensor_key == "timeout":
             mode_data = self.coordinator.data.get("current_mode", {})
             current_mode = mode_data.get("mode_name", "").lower()
+            current_mode_num = mode_data.get("current_mode")
             
             # Automatic mode has no timeout
             if current_mode == "automatic":
@@ -144,8 +150,13 @@ class AerecoSystemSensor(AerecoBaseSensor):
             timeout_value = mode_data.get("timeout")
             timeout_unit = mode_data.get("timeout_unit", 1)  # Default to minutes
             
-            # Convert based on timeout_unit for better display
-            if timeout_unit == 3:  # Days - convert minutes to days
+            # Special handling for Absence mode (mode 3) - system stores days as hours-in-minutes
+            if current_mode_num == 3 and timeout_unit == 2:  # Absence mode with hours unit
+                # System stores 4 days as 96 minutes (should be hours), so convert back to days
+                # timeout_value is the hour equivalent in minutes, so convert: minutes -> hours -> days
+                days_value = round(timeout_value / 60 / 24, 1) if timeout_value else None
+                return days_value
+            elif timeout_unit == 3:  # Days - convert minutes to days (standard case)
                 return round(timeout_value / (60 * 24), 1) if timeout_value else None
             elif timeout_unit == 2:  # Hours - convert minutes to hours  
                 return round(timeout_value / 60, 1) if timeout_value else None
