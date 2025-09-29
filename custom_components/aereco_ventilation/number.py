@@ -100,13 +100,25 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
         super().__init__(coordinator, entry, f"{mode_key}_timeout", name, post_command)
         self._mode_key = mode_key
         self._attr_native_min_value = 1
-        self._attr_native_max_value = 999
         self._attr_native_step = 1
-        self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         self._attr_device_class = NumberDeviceClass.DURATION
         self._attr_mode = NumberMode.BOX
         self._attr_icon = "mdi:timer-outline"
-        self._attr_entity_registry_enabled_default = True
+        
+        # Absence mode uses days, others use minutes
+        if mode_key == "absence":
+            self._attr_native_unit_of_measurement = UnitOfTime.DAYS
+            self._attr_native_max_value = 30  # Max 30 days
+            self._attr_entity_registry_enabled_default = True
+        elif mode_key == "automatic":
+            # Automatic mode doesn't use timeout - make it unavailable
+            self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
+            self._attr_native_max_value = 480
+            self._attr_entity_registry_enabled_default = False
+        else:
+            self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
+            self._attr_native_max_value = 480  # Max 8 hours in minutes
+            self._attr_entity_registry_enabled_default = True
 
     @property
     def native_value(self) -> Optional[float]:
@@ -116,11 +128,23 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
             return None
             
         config_key = f"{self._mode_key}_timeout"
-        return modes_config.get(config_key)
+        value = modes_config.get(config_key)
+        
+        # Convert minutes to days for absence mode display
+        if value is not None and self._mode_key == "absence":
+            return round(value / (24 * 60), 1)  # Convert minutes to days
+        
+        return value
 
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
-        success = await self.coordinator.api.set_mode_timeout(self._mode_key, int(value))
+        # Convert days to minutes for absence mode
+        if self._mode_key == "absence":
+            timeout_minutes = int(value * 24 * 60)  # Convert days to minutes
+        else:
+            timeout_minutes = int(value)
+            
+        success = await self.coordinator.api.set_mode_timeout(self._mode_key, timeout_minutes)
         if success:
             await self.coordinator.async_request_refresh()
 

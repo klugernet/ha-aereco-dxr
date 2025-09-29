@@ -98,10 +98,16 @@ class AerecoAPI:
         }
         
         _LOGGER.debug(f"Sending POST {command} (hex: {hex_command}) with value {value} (hex: {hex_value}) to {url}")
+        _LOGGER.debug(f"POST data: {data}")
         
         try:
             async with session.post(url, data=data) as response:
+                response_text = await response.text()
                 success = response.status == 200
+                
+                _LOGGER.debug(f"POST {command} response status: {response.status}")
+                _LOGGER.debug(f"POST {command} response text: {response_text[:100]}...")  # First 100 chars
+                
                 if success:
                     _LOGGER.debug(f"POST {command} successful")
                 else:
@@ -286,15 +292,15 @@ class AerecoAPI:
             return None
 
         return {
-            "automatic_airflow": data[0] if len(data) > 0 else 0,
+            "automatic_airflow": data[0] if len(data) > 0 and data[0] > 0 else 60,  # Default 60
             "free_cooling_timeout": data[1] if len(data) > 1 else 60,
-            "free_cooling_airflow": data[2] if len(data) > 2 else 0,
+            "free_cooling_airflow": data[2] if len(data) > 2 and data[2] > 0 else 80,  # Default 80
             "boost_timeout": data[3] if len(data) > 3 else 30,
-            "boost_airflow": data[4] if len(data) > 4 else 0,
+            "boost_airflow": data[4] if len(data) > 4 and data[4] > 0 else 120,  # Default 120
             "absence_timeout": data[5] if len(data) > 5 else 480,
-            "absence_airflow": data[6] if len(data) > 6 else 0,
+            "absence_airflow": data[6] if len(data) > 6 and data[6] > 0 else 40,  # Default 40
             "stop_timeout": data[7] if len(data) > 7 else 0,
-            "stop_airflow": data[8] if len(data) > 8 else 0,
+            "stop_airflow": data[8] if len(data) > 8 and data[8] > 0 else 0,  # Default 0
             "raw_data": result
         }
 
