@@ -111,6 +111,18 @@ class AerecoSystemSensor(AerecoBaseSensor):
         self._attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
+    def native_unit_of_measurement(self) -> Optional[str]:
+        """Return the unit of measurement for dynamic timeout display."""
+        if self._sensor_key == "timeout":
+            mode_data = self.coordinator.data.get("current_mode", {})
+            timeout_unit = mode_data.get("timeout_unit", 1)  # Default to minutes
+            
+            unit_map = {0: "s", 1: "min", 2: "h", 3: "d"}
+            return unit_map.get(timeout_unit, "min")
+        
+        return self._attr_native_unit_of_measurement
+
+    @property
     def native_value(self) -> Optional[float]:
         """Return the native value of the sensor."""
         if self._sensor_key == "airflow":
@@ -129,7 +141,16 @@ class AerecoSystemSensor(AerecoBaseSensor):
             if current_mode == "automatic":
                 return None
             
-            return mode_data.get("timeout")
+            timeout_value = mode_data.get("timeout")
+            timeout_unit = mode_data.get("timeout_unit", 1)  # Default to minutes
+            
+            # Convert based on timeout_unit for better display
+            if timeout_unit == 3:  # Days - convert minutes to days
+                return round(timeout_value / (60 * 24), 1) if timeout_value else None
+            elif timeout_unit == 2:  # Hours - convert minutes to hours  
+                return round(timeout_value / 60, 1) if timeout_value else None
+            else:  # Minutes or seconds - keep as is
+                return timeout_value
             
         return None
 

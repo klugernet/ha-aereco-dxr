@@ -140,9 +140,8 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Return if the entity should be enabled when first added to the registry."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
-        # Enable by default only for applicable modes
-        return current_mode in [1, 2, 4]  # Intensive, Presence, Temporary
+        # Always enable by default, availability is controlled by the available property
+        return True
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to current mode."""
@@ -152,7 +151,7 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
         current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
         _LOGGER.debug(f"Hours timeout: Setting value {value} for mode {current_mode}")
         
-        if not current_mode or current_mode not in ["1", "2", "4"]:
+        if not current_mode or current_mode not in [1, 2, 4]:
             _LOGGER.warning(f"Hours timeout: Invalid mode {current_mode}, expected 1, 2, or 4")
             return
             
@@ -162,9 +161,9 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
         
         # Determine POST command based on current mode
         mode_timeout_commands = {
-            "1": "02",  # Free Cooling -> POST_FREE_COOLING_MODE_TIMEOUT
-            "2": "04",  # Boost -> POST_BOOST_MODE_TIMEOUT  
-            "4": "08",  # Stop -> POST_STOP_MODE_TIMEOUT
+            1: "02",  # Free Cooling -> POST_FREE_COOLING_MODE_TIMEOUT
+            2: "04",  # Boost -> POST_BOOST_MODE_TIMEOUT  
+            4: "08",  # Stop -> POST_STOP_MODE_TIMEOUT
         }
         
         post_command = mode_timeout_commands.get(current_mode)
@@ -248,9 +247,8 @@ class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Return if the entity should be enabled when first added to the registry."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
-        # Enable by default only for Absence mode
-        return current_mode == 3  # Absence mode
+        # Always enable by default, availability is controlled by the available property
+        return True
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to Absence mode."""
@@ -260,7 +258,7 @@ class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
         current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
         _LOGGER.debug(f"Days timeout: Setting value {value} for mode {current_mode}")
         
-        if current_mode != "3":  # Only for Absence mode
+        if current_mode != 3:  # Only for Absence mode
             _LOGGER.warning(f"Days timeout: Invalid mode {current_mode}, expected 3 (Absence)")
             return
             
