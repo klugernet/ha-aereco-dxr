@@ -118,9 +118,9 @@ class AerecoSystemSensor(AerecoBaseSensor):
             timeout_unit = mode_data.get("timeout_unit", 1)  # Default to minutes
             current_mode_num = mode_data.get("current_mode")
             
-            # Special handling for Absence mode - show days even though system uses hours unit
-            if current_mode_num == 3 and timeout_unit == 2:  # Absence mode with hours unit
-                return "d"  # Display as days
+            # Special handling for Absence mode - always show days
+            if current_mode_num == 3:  # Absence mode
+                return "d"  # Always display as days for Absence mode
             
             unit_map = {0: "s", 1: "min", 2: "h", 3: "d"}
             return unit_map.get(timeout_unit, "min")
@@ -150,15 +150,14 @@ class AerecoSystemSensor(AerecoBaseSensor):
             timeout_value = mode_data.get("timeout")
             timeout_unit = mode_data.get("timeout_unit", 1)  # Default to minutes
             
-            # Special handling for Absence mode (mode 3) - system stores/returns hours directly
-            if current_mode_num == 3 and timeout_unit == 2:  # Absence mode with hours unit
+            # Convert based on timeout_unit for better display
+            if timeout_unit == 3:  # Days - system returns days directly (for larger values ≥5 days)
+                return timeout_value
+            elif current_mode_num == 3 and timeout_unit == 2:  # Absence mode with hours (≤4 days)
                 # System returns hours directly (e.g., 95 hours), convert to days
-                # timeout_value is already in hours, so convert: hours -> days
                 days_value = round(timeout_value / 24, 1) if timeout_value else None
                 return days_value
-            elif timeout_unit == 3:  # Days - convert minutes to days (standard case)
-                return round(timeout_value / (60 * 24), 1) if timeout_value else None
-            elif timeout_unit == 2:  # Hours - convert minutes to hours  
+            elif timeout_unit == 2:  # Hours - convert minutes to hours (other modes)
                 return round(timeout_value / 60, 1) if timeout_value else None
             else:  # Minutes or seconds - keep as is
                 return timeout_value
