@@ -366,16 +366,6 @@ class AerecoAPI:
             _LOGGER.error(f"Error executing timeout POST {post_command} with value {value}: {e}")
             return False
 
-    async def set_mode_airflow(self, mode: str, airflow: int) -> bool:
-        """Set airflow for a specific mode. Only Automatic mode supports airflow configuration."""
-        mode_airflow_commands = {
-            "automatic": POST_AUTOMATIC_MODE_AIRFLOW,
-            # Only Automatic mode has configurable airflow
-            # Other modes have fixed airflow values in the system
-        }
-        
-        command = mode_airflow_commands.get(mode)
-        if not command:
-            return False
-            
-        return await self._post_command(command, str(airflow))
+    async def set_system_airflow(self, airflow: int) -> bool:
+        """Set system-wide airflow value that applies to all modes."""
+        return await self._post_command(POST_SYSTEM_AIRFLOW, str(airflow))

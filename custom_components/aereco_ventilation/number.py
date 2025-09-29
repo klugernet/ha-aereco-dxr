@@ -16,8 +16,9 @@ from . import AerecoDataUpdateCoordinator
 from .const import (
     DOMAIN, 
     MODE_NAMES,
-    POST_AUTOMATIC_MODE_AIRFLOW,  # Only Automatic mode has configurable airflow
+    POST_SYSTEM_AIRFLOW,  # System-wide airflow setting
     GET_OPERATION_MODES_CONFIG,
+    DEFAULT_TIMEOUT_VALUES,
 )
 
 
@@ -37,9 +38,9 @@ async def async_setup_entry(
         AerecoModeTimeoutNumber(coordinator, entry, "mode_timeout", "Mode Timeout", "DYNAMIC"),
     ])
     
-    # Mode airflow settings - only Automatic mode has configurable airflow
+    # Mode airflow settings - system-wide airflow that applies to all modes
     entities.extend([
-        AerecoModeAirflowNumber(coordinator, entry, "automatic", "Automatic Mode Airflow", POST_AUTOMATIC_MODE_AIRFLOW),
+        AerecoSystemAirflowNumber(coordinator, entry, "system", "System Airflow", POST_SYSTEM_AIRFLOW),
     ])
     
     async_add_entities(entities, update_before_add=True)
@@ -124,19 +125,23 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
         """Return the current timeout value."""
         current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
         
-        # Show default timeout values based on current mode
-        default_timeouts = {
-            "1": 2,   # Free Cooling: 2h
-            "2": 2,   # Boost: 2h  
-            "3": 1,   # Absence: 1d
-            "4": 1,   # Stop: 1h
-        }
+        # Get default timeout value for current mode
+        default_timeout = DEFAULT_TIMEOUT_VALUES.get(current_mode, 2)
         
-        # Return the appropriate default or last set value
-        if hasattr(self, '_last_timeout_value'):
+        # Check if mode has changed since last update
+        if hasattr(self, '_last_mode') and self._last_mode != current_mode:
+            # Mode changed - clear stored value to show new mode's default
+            if hasattr(self, '_last_timeout_value'):
+                delattr(self, '_last_timeout_value')
+        
+        # Store current mode for next comparison
+        self._last_mode = current_mode
+        
+        # Return stored value or default for current mode
+        if hasattr(self, '_last_timeout_value') and self._last_timeout_value is not None:
             return self._last_timeout_value
         else:
-            return default_timeouts.get(current_mode, 2)  # Default to 2h if unknown mode
+            return default_timeout
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to current mode."""
@@ -144,8 +149,9 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
         if not current_mode:
             return
             
-        # Store the value for display
+        # Store the value for display (this will be in the correct unit for the current mode)
         self._last_timeout_value = value
+        self._last_mode = current_mode
         
         # Determine POST command based on current mode
         mode_timeout_commands = {
@@ -173,9 +179,15 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
             self.coordinator.data is not None
         )
 
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # This will trigger a state update when coordinator data changes
+        # which includes when the mode changes
+        super()._handle_coordinator_update()
 
-class AerecoModeAirflowNumber(AerecoBaseNumber):
-    """Number entity for mode airflow configuration."""
+
+class AerecoSystemAirflowNumber(AerecoBaseNumber):
+    """Number entity for system-wide airflow configuration."""
 
     def __init__(
         self,
@@ -201,14 +213,15 @@ class AerecoModeAirflowNumber(AerecoBaseNumber):
         """Return the current value."""
         modes_config = self.coordinator.data.get("modes_config")
         if not modes_config:
-            return None
+            # Return a reasonable default for system airflow
+            return 150  # Default system airflow in m³/h
             
         config_key = f"{self._mode_key}_airflow"
-        return modes_config.get(config_key)
+        return modes_config.get(config_key, 150)
 
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
-        success = await self.coordinator.api.set_mode_airflow(self._mode_key, int(value))
+        success = await self.coordinator.api.set_system_airflow(int(value))
         if success:
             await self.coordinator.async_request_refresh()
 

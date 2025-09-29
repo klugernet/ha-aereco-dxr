@@ -1,7 +1,7 @@
 """Constants for the Aereco Ventilation System integration."""
 
 DOMAIN = "aereco_ventilation"
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 
 # Default values
 DEFAULT_PORT = 80
@@ -47,7 +47,7 @@ GET_ABOUT_INFO = "59"
 
 # POST Commands
 POST_FILTER_CHANGE_WARN = "0"
-POST_AUTOMATIC_MODE_AIRFLOW = "1"  # Only Automatic mode has configurable airflow
+POST_SYSTEM_AIRFLOW = "1"  # System-wide airflow setting (applies to all modes)
 POST_FREE_COOLING_MODE_TIMEOUT = "2"
 POST_FREE_COOLING_MODE_AIRFLW = "3"  # Keep for potential future use
 POST_BOOST_MODE_TIMEOUT = "4"
@@ -104,6 +104,24 @@ MODE_NAMES = {
     MODE_DEBUG: "Debug",
     MODE_STARTUP: "Startup",
     MODE_SAFEMODE: "Safe Mode"
+}
+
+# Default airflow values for each mode (m³/h)
+DEFAULT_AIRFLOW_VALUES = {
+    MODE_AUTOMATIC: 60,    # Automatic mode: moderate airflow
+    MODE_FREE_COOLING: 80, # Free cooling: higher airflow for cooling
+    MODE_BOOST: 120,        # Boost mode: maximum airflow
+    MODE_ABSENCE: 40,       # Absence mode: minimal airflow
+    MODE_STOP: 0,           # Stop mode: no airflow
+}
+
+# Default timeout values for each mode
+DEFAULT_TIMEOUT_VALUES = {
+    MODE_AUTOMATIC: 0,      # Automatic mode: no timeout (continuous)
+    MODE_FREE_COOLING: 2,   # Free cooling: 2 hours
+    MODE_BOOST: 2,          # Boost mode: 2 hours  
+    MODE_ABSENCE: 1,        # Absence mode: 1 day
+    MODE_STOP: 1,           # Stop mode: 1 hour
 }
 
 # Sensor Types

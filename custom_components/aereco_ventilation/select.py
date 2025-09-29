@@ -10,7 +10,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import AerecoDataUpdateCoordinator
-from .const import DOMAIN, MODE_NAMES, MODE_AUTOMATIC, MODE_FREE_COOLING, MODE_BOOST, MODE_ABSENCE, MODE_STOP
+from .const import (
+    DOMAIN, MODE_NAMES, MODE_AUTOMATIC, MODE_FREE_COOLING, MODE_BOOST, MODE_ABSENCE, MODE_STOP,
+    DEFAULT_AIRFLOW_VALUES, DEFAULT_TIMEOUT_VALUES
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,15 +86,8 @@ class AerecoModeSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.debug(f"Set mode API call result: {result}")
             
             # Apply default timeout for the new mode
-            default_timeouts = {
-                "1": 2,   # Free Cooling: 2h
-                "2": 2,   # Boost: 2h  
-                "3": 1,   # Absence: 1d (will be converted to days)
-                "4": 1,   # Stop: 1h
-            }
-            
-            timeout_value = default_timeouts.get(mode_key)
-            if timeout_value:
+            timeout_value = DEFAULT_TIMEOUT_VALUES.get(mode_key)
+            if timeout_value and timeout_value > 0:  # Skip timeout for Automatic mode (0 = no timeout)
                 # Send timeout to settings.html
                 timeout_commands = {
                     "1": "02",  # Free Cooling -> POST_FREE_COOLING_MODE_TIMEOUT
@@ -104,6 +100,12 @@ class AerecoModeSelect(CoordinatorEntity, SelectEntity):
                 if post_command:
                     timeout_result = await self.coordinator.api.set_mode_timeout_direct(post_command, timeout_value)
                     _LOGGER.debug(f"Set default timeout {timeout_value} for mode {option}: {timeout_result}")
+            
+            # Apply default airflow for the new mode
+            default_airflow = DEFAULT_AIRFLOW_VALUES.get(mode_key)
+            if default_airflow is not None:
+                airflow_result = await self.coordinator.api.set_system_airflow(default_airflow)
+                _LOGGER.debug(f"Set default airflow {default_airflow} for mode {option}: {airflow_result}")
             
             # Wait a moment for the system to process the changes
             await asyncio.sleep(1)
