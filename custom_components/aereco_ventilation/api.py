@@ -60,8 +60,13 @@ class AerecoAPI:
         try:
             async with session.get(url) as response:
                 if response.status == 200:
-                    text = await response.text()
-                    return text.strip()
+                    try:
+                        text = await response.text()
+                        return text.strip()
+                    except UnicodeDecodeError as e:
+                        # Some commands return binary data that can't be decoded as UTF-8
+                        _LOGGER.debug(f"GET {command} returned binary data, cannot decode as text: {e}")
+                        return None
                 else:
                     _LOGGER.error(f"GET {command} failed with status {response.status}")
                     return None
@@ -69,17 +74,30 @@ class AerecoAPI:
             _LOGGER.error(f"Error executing GET {command}: {e}")
             return None
 
+    def _dec_to_hex(self, decimal_value: str) -> str:
+        """Convert decimal string to 2-digit hex format (like decToHex in JS)."""
+        try:
+            dec_val = int(decimal_value)
+            hex_val = format(dec_val, '02x')  # Convert to 2-digit hex with leading zero if needed
+            return hex_val
+        except ValueError:
+            return "00"
+
     async def _post_command(self, command: str, value: str) -> bool:
         """Execute POST command."""
         session = await self._get_session()
-        url = f"{self.base_url}/post"
+        url = f"{self.base_url}/home.html"  # Original system uses home.html, not post
+        
+        # Convert command and value to hex format like the original system
+        hex_command = self._dec_to_hex(command)
+        hex_value = self._dec_to_hex(value)
         
         data = {
-            "p_i": command,
-            "p_v": value
+            "p_i": hex_command,
+            "p_v": hex_value
         }
         
-        _LOGGER.debug(f"Sending POST {command} with value {value} to {url}")
+        _LOGGER.debug(f"Sending POST {command} (hex: {hex_command}) with value {value} (hex: {hex_value}) to {url}")
         
         try:
             async with session.post(url, data=data) as response:
@@ -168,9 +186,17 @@ class AerecoAPI:
         # Get room names (starting from GET_ROOM_NAME1 = "43")
         for i in range(MAX_DUCT):
             command_id = str(int(GET_ROOM_NAME1) + i)
-            result = await self._get_command(command_id)
-            if result:
-                room_names[i] = result.strip()
+            try:
+                result = await self._get_command(command_id)
+                if result and isinstance(result, str):
+                    room_names[i] = result.strip()
+                    _LOGGER.debug(f"Room {i}: '{result.strip()}'")
+                else:
+                    _LOGGER.debug(f"No room name found for command {command_id} (room {i})")
+            except UnicodeDecodeError as e:
+                _LOGGER.debug(f"Room name command {command_id} returned binary data, skipping: {e}")
+            except Exception as e:
+                _LOGGER.debug(f"Failed to get room name for command {command_id}: {e}")
         
         return room_names
 
