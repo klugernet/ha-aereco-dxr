@@ -150,11 +150,11 @@ class AerecoSystemSensor(AerecoBaseSensor):
             timeout_value = mode_data.get("timeout")
             timeout_unit = mode_data.get("timeout_unit", 1)  # Default to minutes
             
-            # Special handling for Absence mode (mode 3) - system stores days as hours-in-minutes
+            # Special handling for Absence mode (mode 3) - system stores/returns hours directly
             if current_mode_num == 3 and timeout_unit == 2:  # Absence mode with hours unit
-                # System stores 4 days as 96 minutes (should be hours), so convert back to days
-                # timeout_value is the hour equivalent in minutes, so convert: minutes -> hours -> days
-                days_value = round(timeout_value / 60 / 24, 1) if timeout_value else None
+                # System returns hours directly (e.g., 95 hours), convert to days
+                # timeout_value is already in hours, so convert: hours -> days
+                days_value = round(timeout_value / 24, 1) if timeout_value else None
                 return days_value
             elif timeout_unit == 3:  # Days - convert minutes to days (standard case)
                 return round(timeout_value / (60 * 24), 1) if timeout_value else None
