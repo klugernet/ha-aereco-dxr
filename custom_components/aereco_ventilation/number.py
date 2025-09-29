@@ -34,13 +34,18 @@ async def async_setup_entry(
     
     entities = []
     
-    # Single timeout setting that applies to current mode
-    # Absence mode uses days, other modes use hours/minutes
+    # Separate timeout entities for better UX
+    # Hours timeout for Free Cooling, Boost, Stop modes
     entities.extend([
-        AerecoModeTimeoutNumber(coordinator, entry, "mode_timeout", "Mode Timeout", "DYNAMIC"),
+        AerecoModeTimeoutHoursNumber(coordinator, entry, "timeout_hours", "Mode Timeout (Hours)", "DYNAMIC"),
     ])
     
-    # Mode airflow settings - system-wide airflow that applies to all modes
+    # Days timeout for Absence mode  
+    entities.extend([
+        AerecoModeTimeoutDaysNumber(coordinator, entry, "timeout_days", "Mode Timeout (Days)", "DYNAMIC"),
+    ])
+    
+    # System-wide airflow that applies to all modes
     entities.extend([
         AerecoSystemAirflowNumber(coordinator, entry, "system", "System Airflow", POST_SYSTEM_AIRFLOW),
     ])
@@ -74,8 +79,8 @@ class AerecoBaseNumber(CoordinatorEntity, NumberEntity):
         }
 
 
-class AerecoModeTimeoutNumber(AerecoBaseNumber):
-    """Number entity for universal mode timeout configuration."""
+class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
+    """Number entity for timeout configuration in hours (Free Cooling, Boost, Stop)."""
 
     def __init__(
         self,
@@ -85,48 +90,39 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
         name: str,
         post_command: str,
     ) -> None:
-        """Initialize the timeout number entity."""
-        super().__init__(coordinator, entry, f"{mode_key}_timeout", name, post_command)
+        """Initialize the timeout hours number entity."""
+        super().__init__(coordinator, entry, f"{mode_key}", name, post_command)
         self._mode_key = mode_key
         self._attr_native_min_value = 1
+        self._attr_native_max_value = 24  # Max 24 hours
         self._attr_native_step = 1
+        self._attr_native_unit_of_measurement = UnitOfTime.HOURS
         self._attr_device_class = NumberDeviceClass.DURATION
         self._attr_mode = NumberMode.BOX
         self._attr_icon = "mdi:timer-outline"
-        
-        # This is a universal timeout that adapts to current mode
-        # Default to hours, but will change based on current mode
-        self._attr_native_unit_of_measurement = UnitOfTime.HOURS
-        self._attr_native_max_value = 24  # Max 24 hours by default
         self._attr_entity_registry_enabled_default = True
 
     @property
-    def native_unit_of_measurement(self) -> str:
-        """Return the unit of measurement based on current mode."""
+    def available(self) -> bool:
+        """Return if entity is available - only for modes that use hours."""
         current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
-        
-        # Absence mode uses days, others use hours
-        if current_mode == "3":  # Absence mode
-            return UnitOfTime.DAYS
-        else:
-            return UnitOfTime.HOURS
-
-    @property
-    def native_max_value(self) -> float:
-        """Return max value based on current mode."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
-        
-        # Absence mode: max 30 days, others: max 24 hours  
-        if current_mode == "3":  # Absence mode
-            return 30
-        else:
-            return 24
+        # Available for Free Cooling, Boost, Stop modes (not Absence or Automatic)
+        hours_modes = ["1", "2", "4"]  # Free Cooling, Boost, Stop
+        return (
+            self.coordinator.last_update_success and 
+            self.coordinator.data is not None and
+            current_mode in hours_modes
+        )
 
     @property
     def native_value(self) -> Optional[float]:
-        """Return the current timeout value."""
+        """Return the current timeout value in hours."""
         current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
         
+        # Only show value for applicable modes
+        if current_mode not in ["1", "2", "4"]:  # Free Cooling, Boost, Stop
+            return None
+            
         # Get default timeout value for current mode
         default_timeout = DEFAULT_TIMEOUT_VALUES.get(current_mode, 2)
         
@@ -148,10 +144,10 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to current mode."""
         current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
-        if not current_mode:
+        if not current_mode or current_mode not in ["1", "2", "4"]:
             return
             
-        # Store the value for display (this will be in the correct unit for the current mode)
+        # Store the value for display
         self._last_timeout_value = value
         self._last_mode = current_mode
         
@@ -159,7 +155,6 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
         mode_timeout_commands = {
             "1": "02",  # Free Cooling -> POST_FREE_COOLING_MODE_TIMEOUT
             "2": "04",  # Boost -> POST_BOOST_MODE_TIMEOUT  
-            "3": "06",  # Absence -> POST_ABSENCE_MODE_TIMEOUT
             "4": "08",  # Stop -> POST_STOP_MODE_TIMEOUT
         }
         
@@ -167,24 +162,86 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
         if not post_command:
             return
             
-        # Send to settings.html as per user's observation
+        # Send to settings.html
         success = await self.coordinator.api.set_mode_timeout_direct(post_command, int(value))
         
         if success:
             await self.coordinator.async_request_refresh()
 
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        super()._handle_coordinator_update()
+
+
+class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
+    """Number entity for timeout configuration in days (Absence mode)."""
+
+    def __init__(
+        self,
+        coordinator: AerecoDataUpdateCoordinator,
+        entry: ConfigEntry,
+        mode_key: str,
+        name: str,
+        post_command: str,
+    ) -> None:
+        """Initialize the timeout days number entity."""
+        super().__init__(coordinator, entry, f"{mode_key}", name, post_command)
+        self._mode_key = mode_key
+        self._attr_native_min_value = 1
+        self._attr_native_max_value = 30  # Max 30 days
+        self._attr_native_step = 1
+        self._attr_native_unit_of_measurement = UnitOfTime.DAYS
+        self._attr_device_class = NumberDeviceClass.DURATION
+        self._attr_mode = NumberMode.BOX
+        self._attr_icon = "mdi:calendar-clock"
+        self._attr_entity_registry_enabled_default = True
+
     @property
     def available(self) -> bool:
-        """Return if entity is available."""
+        """Return if entity is available - only for Absence mode."""
+        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        # Available only for Absence mode
         return (
             self.coordinator.last_update_success and 
-            self.coordinator.data is not None
+            self.coordinator.data is not None and
+            current_mode == "3"  # Absence mode
         )
+
+    @property
+    def native_value(self) -> Optional[float]:
+        """Return the current timeout value in days."""
+        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        
+        # Only show value for Absence mode
+        if current_mode != "3":  # Absence mode
+            return None
+            
+        # Get default timeout value for Absence mode (1 day)
+        default_timeout = DEFAULT_TIMEOUT_VALUES.get("3", 1)
+        
+        # Return stored value or default
+        if hasattr(self, '_last_timeout_value') and self._last_timeout_value is not None:
+            return self._last_timeout_value
+        else:
+            return default_timeout
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the timeout value and apply it to Absence mode."""
+        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        if current_mode != "3":  # Only for Absence mode
+            return
+            
+        # Store the value for display
+        self._last_timeout_value = value
+        
+        # Send to settings.html (Absence timeout command)
+        success = await self.coordinator.api.set_mode_timeout_direct("06", int(value))
+        
+        if success:
+            await self.coordinator.async_request_refresh()
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        # This will trigger a state update when coordinator data changes
-        # which includes when the mode changes
         super()._handle_coordinator_update()
 
 
