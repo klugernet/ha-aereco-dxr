@@ -86,22 +86,25 @@ class AerecoAPI:
     async def _post_command(self, command: str, value: str) -> bool:
         """Execute POST command."""
         session = await self._get_session()
-        url = f"{self.base_url}/home.html"  # Original system uses home.html, not post
+        url = f"{self.base_url}/home.html"  # Original system uses home.html endpoint
         
-        # Convert command and value to hex format like the original system
-        hex_command = self._dec_to_hex(command)
-        hex_value = self._dec_to_hex(value)
+        # Convert to hex format like the original JavaScript prepareDataForPost function
+        # The format should be p_i=0f&p_v=00 (hex values, not decimal)
+        try:
+            hex_command = f"{int(command):02x}"  # Convert decimal to 2-digit hex
+            hex_value = f"{int(value):02x}"      # Convert decimal to 2-digit hex
+        except ValueError as e:
+            _LOGGER.error(f"Invalid command or value for POST: command={command}, value={value}: {e}")
+            return False
         
-        data = {
-            "p_i": hex_command,
-            "p_v": hex_value
-        }
+        data = f"p_i={hex_command}&p_v={hex_value}"
         
         _LOGGER.debug(f"Sending POST {command} (hex: {hex_command}) with value {value} (hex: {hex_value}) to {url}")
         _LOGGER.debug(f"POST data: {data}")
         
         try:
-            async with session.post(url, data=data) as response:
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            async with session.post(url, data=data, headers=headers) as response:
                 response_text = await response.text()
                 success = response.status == 200
                 
