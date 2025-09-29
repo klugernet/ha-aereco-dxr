@@ -72,7 +72,7 @@ class AerecoFan(CoordinatorEntity, FanEntity):
         elif current_mode == MODE_FREE_COOLING:
             return 60  # Medium speed for free cooling
         elif current_mode == MODE_BOOST:
-            return 100  # Maximum speed for boost
+            return 120  # Maximum speed for boost
         else:
             return 50  # Default medium speed
 

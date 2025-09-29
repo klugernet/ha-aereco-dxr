@@ -97,14 +97,18 @@ class AerecoAPI:
             _LOGGER.error(f"Invalid command or value for POST: command={command}, value={value}: {e}")
             return False
         
-        data = f"p_i={hex_command}&p_v={hex_value}"
+        # Use dictionary for proper application/x-www-form-urlencoded encoding
+        data = {
+            "p_i": hex_command,
+            "p_v": hex_value
+        }
         
         _LOGGER.debug(f"Sending POST {command} (hex: {hex_command}) with value {value} (hex: {hex_value}) to {url}")
         _LOGGER.debug(f"POST data: {data}")
         
         try:
-            headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            async with session.post(url, data=data, headers=headers) as response:
+            # aiohttp will automatically set Content-Type to application/x-www-form-urlencoded when data is dict
+            async with session.post(url, data=data) as response:
                 response_text = await response.text()
                 success = response.status == 200
                 
@@ -118,6 +122,7 @@ class AerecoAPI:
                 return success
         except Exception as e:
             _LOGGER.error(f"Error executing POST {command} with value {value}: {e}")
+            return False
             return False
 
     async def get_current_mode(self) -> Optional[Dict[str, Any]]:
