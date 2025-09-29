@@ -113,10 +113,10 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
     @property
     def native_value(self) -> Optional[float]:
         """Return the current timeout value in hours."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
         
         # Only show value for applicable modes
-        if current_mode not in ["1", "2", "4"]:  # Free Cooling, Boost, Stop
+        if current_mode not in [1, 2, 4]:  # Intensive, Presence, Temporary
             return None
             
         # Get default timeout value for current mode
@@ -137,12 +137,19 @@ class AerecoModeTimeoutHoursNumber(AerecoBaseNumber):
         else:
             return default_timeout
 
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Return if the entity should be enabled when first added to the registry."""
+        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
+        # Enable by default only for applicable modes
+        return current_mode in [1, 2, 4]  # Intensive, Presence, Temporary
+
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to current mode."""
         import logging
         _LOGGER = logging.getLogger(__name__)
         
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
         _LOGGER.debug(f"Hours timeout: Setting value {value} for mode {current_mode}")
         
         if not current_mode or current_mode not in ["1", "2", "4"]:
@@ -214,14 +221,23 @@ class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
     @property
     def native_value(self) -> Optional[float]:
         """Return the current timeout value in days."""
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
         
         # Only show value for Absence mode
-        if current_mode != "3":  # Absence mode
+        if current_mode != 3:  # Absence mode
             return None
             
         # Get default timeout value for Absence mode (1 day)
         default_timeout = DEFAULT_TIMEOUT_VALUES.get("3", 1)
+        
+        # Check if mode has changed since last update
+        if hasattr(self, '_last_mode') and self._last_mode != current_mode:
+            # Mode changed - clear stored value to show new mode's default
+            if hasattr(self, '_last_timeout_value'):
+                delattr(self, '_last_timeout_value')
+        
+        # Store current mode for next comparison
+        self._last_mode = current_mode
         
         # Return stored value or default
         if hasattr(self, '_last_timeout_value') and self._last_timeout_value is not None:
@@ -229,12 +245,19 @@ class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
         else:
             return default_timeout
 
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Return if the entity should be enabled when first added to the registry."""
+        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
+        # Enable by default only for Absence mode
+        return current_mode == 3  # Absence mode
+
     async def async_set_native_value(self, value: float) -> None:
         """Set the timeout value and apply it to Absence mode."""
         import logging
         _LOGGER = logging.getLogger(__name__)
         
-        current_mode = self.coordinator.data.get("current_mode", {}).get("mode")
+        current_mode = self.coordinator.data.get("current_mode", {}).get("current_mode")
         _LOGGER.debug(f"Days timeout: Setting value {value} for mode {current_mode}")
         
         if current_mode != "3":  # Only for Absence mode
@@ -290,7 +313,7 @@ class AerecoSystemAirflowNumber(AerecoBaseNumber):
             return float(current_mode_data["airflow"])
         
         # Fallback: return default for current mode if no data available
-        current_mode = current_mode_data.get("mode") if current_mode_data else None
+        current_mode = current_mode_data.get("current_mode") if current_mode_data else None
         return DEFAULT_AIRFLOW_VALUES.get(current_mode, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
 
     async def async_set_native_value(self, value: float) -> None:
