@@ -79,9 +79,16 @@ class AerecoAPI:
             "p_v": value
         }
         
+        _LOGGER.debug(f"Sending POST {command} with value {value} to {url}")
+        
         try:
             async with session.post(url, data=data) as response:
-                return response.status == 200
+                success = response.status == 200
+                if success:
+                    _LOGGER.debug(f"POST {command} successful")
+                else:
+                    _LOGGER.error(f"POST {command} failed with status {response.status}")
+                return success
         except Exception as e:
             _LOGGER.error(f"Error executing POST {command} with value {value}: {e}")
             return False
@@ -108,7 +115,10 @@ class AerecoAPI:
 
     async def set_mode(self, mode: str) -> bool:
         """Set operation mode."""
-        return await self._post_command(POST_CURRENT_MODE, mode)
+        _LOGGER.debug(f"Setting mode to: {mode}")
+        result = await self._post_command(POST_CURRENT_MODE, mode)
+        _LOGGER.debug(f"Set mode result: {result}")
+        return result
 
     async def get_sensors(self) -> Optional[Dict[str, Any]]:
         """Get sensor data."""

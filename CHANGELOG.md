@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2025-09-29
+
+### Fixed
+- **Number Entities**: Fixed Number entities not appearing in HomeAssistant
+  - Added `entity_registry_enabled_default = True` to ensure entities are enabled by default
+  - Improved `available` property logic for timeout and airflow configuration entities
+  - Enhanced error handling and data validation for Number entities
+- **Automatic Mode Timeout**: Fixed incorrect timeout display in Automatic mode
+  - Timeout sensor now returns `None` and becomes unavailable in Automatic mode
+  - Automatic mode is a permanent mode without timeout limitations
+- **Mode Selection Debugging**: Enhanced mode switching functionality
+  - Added comprehensive debug logging for mode selection API calls
+  - Improved error handling and status reporting for mode changes
+  - Added 1-second delay after mode changes to allow system processing
+
+### Improved
+- Enhanced API logging and debugging capabilities
+- Better error messages and status reporting
+- Improved timing for system state updates
+
 ## [1.1.2] - 2025-09-29
 
 ### Fixed

@@ -1,4 +1,6 @@
 """Select entity for Aereco Ventilation System."""
+import asyncio
+import logging
 from typing import Optional, List
 
 from homeassistant.components.select import SelectEntity
@@ -9,6 +11,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import AerecoDataUpdateCoordinator
 from .const import DOMAIN, MODE_NAMES, MODE_AUTOMATIC, MODE_FREE_COOLING, MODE_BOOST, MODE_ABSENCE, MODE_STOP
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -62,13 +66,23 @@ class AerecoModeSelect(CoordinatorEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
+        _LOGGER.debug(f"Select option called with: {option}")
+        
         # Find mode key by name
         mode_key = None
         for key, name in MODE_NAMES.items():
             if name == option:
                 mode_key = key
                 break
-                
+        
+        _LOGGER.debug(f"Found mode key: {mode_key} for option: {option}")
+        
         if mode_key:
-            await self.coordinator.api.set_mode(mode_key)
+            result = await self.coordinator.api.set_mode(mode_key)
+            _LOGGER.debug(f"Set mode API call result: {result}")
+            
+            # Wait a moment for the system to process the change
+            await asyncio.sleep(1)
             await self.coordinator.async_request_refresh()
+        else:
+            _LOGGER.error(f"Could not find mode key for option: {option}")

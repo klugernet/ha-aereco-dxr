@@ -123,6 +123,12 @@ class AerecoSystemSensor(AerecoBaseSensor):
             
         elif self._sensor_key == "timeout":
             mode_data = self.coordinator.data.get("current_mode", {})
+            current_mode = mode_data.get("mode_name", "").lower()
+            
+            # Automatic mode has no timeout
+            if current_mode == "automatic":
+                return None
+            
             return mode_data.get("timeout")
             
         return None
@@ -139,6 +145,24 @@ class AerecoSystemSensor(AerecoBaseSensor):
             attributes["timeout_unit"] = unit_map.get(timeout_unit, "min")
             
         return attributes
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        if self._sensor_key == "timeout":
+            # Timeout sensor is only available when not in automatic mode
+            mode_data = self.coordinator.data.get("current_mode", {})
+            current_mode = mode_data.get("mode_name", "").lower()
+            return (
+                self.coordinator.last_update_success and 
+                self.coordinator.data is not None and
+                current_mode != "automatic"
+            )
+        
+        return (
+            self.coordinator.last_update_success and 
+            self.coordinator.data is not None
+        )
 
 
 class AerecoRoomSensor(AerecoBaseSensor):

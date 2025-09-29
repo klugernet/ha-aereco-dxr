@@ -106,6 +106,7 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
         self._attr_device_class = NumberDeviceClass.DURATION
         self._attr_mode = NumberMode.BOX
         self._attr_icon = "mdi:timer-outline"
+        self._attr_entity_registry_enabled_default = True
 
     @property
     def native_value(self) -> Optional[float]:
@@ -126,8 +127,12 @@ class AerecoModeTimeoutNumber(AerecoBaseNumber):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        # Only show timeout settings for relevant modes
-        return self._mode_key in ["free_cooling", "boost", "absence", "stop"]
+        # Available if we have coordinator data and mode is supported
+        return (
+            self.coordinator.last_update_success and 
+            self.coordinator.data is not None and
+            self._mode_key in ["free_cooling", "boost", "absence", "stop"]
+        )
 
 
 class AerecoModeAirflowNumber(AerecoBaseNumber):
@@ -150,6 +155,7 @@ class AerecoModeAirflowNumber(AerecoBaseNumber):
         self._attr_native_unit_of_measurement = UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR
         self._attr_mode = NumberMode.BOX
         self._attr_icon = "mdi:fan"
+        self._attr_entity_registry_enabled_default = True
 
     @property
     def native_value(self) -> Optional[float]:
@@ -179,3 +185,12 @@ class AerecoModeAirflowNumber(AerecoBaseNumber):
             return 50   # Very low for stop mode
         else:
             return 300  # Default max for automatic and free cooling
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        # Available if we have coordinator data
+        return (
+            self.coordinator.last_update_success and 
+            self.coordinator.data is not None
+        )
