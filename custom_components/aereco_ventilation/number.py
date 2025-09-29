@@ -19,6 +19,8 @@ from .const import (
     POST_SYSTEM_AIRFLOW,  # System-wide airflow setting
     GET_OPERATION_MODES_CONFIG,
     DEFAULT_TIMEOUT_VALUES,
+    DEFAULT_AIRFLOW_VALUES,
+    MODE_AUTOMATIC,
 )
 
 
@@ -213,11 +215,11 @@ class AerecoSystemAirflowNumber(AerecoBaseNumber):
         """Return the current value."""
         modes_config = self.coordinator.data.get("modes_config")
         if not modes_config:
-            # Return a reasonable default for system airflow
-            return 150  # Default system airflow in m³/h
+            # Return the default system airflow (Automatic mode default)
+            return DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60)
             
         config_key = f"{self._mode_key}_airflow"
-        return modes_config.get(config_key, 150)
+        return modes_config.get(config_key, DEFAULT_AIRFLOW_VALUES.get(MODE_AUTOMATIC, 60))
 
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
