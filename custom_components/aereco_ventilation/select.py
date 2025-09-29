@@ -78,10 +78,34 @@ class AerecoModeSelect(CoordinatorEntity, SelectEntity):
         _LOGGER.debug(f"Found mode key: {mode_key} for option: {option}")
         
         if mode_key:
+            # Set the mode first
             result = await self.coordinator.api.set_mode(mode_key)
             _LOGGER.debug(f"Set mode API call result: {result}")
             
-            # Wait a moment for the system to process the change
+            # Apply default timeout for the new mode
+            default_timeouts = {
+                "1": 2,   # Free Cooling: 2h
+                "2": 2,   # Boost: 2h  
+                "3": 1,   # Absence: 1d (will be converted to days)
+                "4": 1,   # Stop: 1h
+            }
+            
+            timeout_value = default_timeouts.get(mode_key)
+            if timeout_value:
+                # Send timeout to settings.html
+                timeout_commands = {
+                    "1": "02",  # Free Cooling -> POST_FREE_COOLING_MODE_TIMEOUT
+                    "2": "04",  # Boost -> POST_BOOST_MODE_TIMEOUT  
+                    "3": "06",  # Absence -> POST_ABSENCE_MODE_TIMEOUT
+                    "4": "08",  # Stop -> POST_STOP_MODE_TIMEOUT
+                }
+                
+                post_command = timeout_commands.get(mode_key)
+                if post_command:
+                    timeout_result = await self.coordinator.api.set_mode_timeout_direct(post_command, timeout_value)
+                    _LOGGER.debug(f"Set default timeout {timeout_value} for mode {option}: {timeout_result}")
+            
+            # Wait a moment for the system to process the changes
             await asyncio.sleep(1)
             await self.coordinator.async_request_refresh()
         else:

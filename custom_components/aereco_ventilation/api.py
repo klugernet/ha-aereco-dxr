@@ -327,14 +327,51 @@ class AerecoAPI:
             
         return await self._post_command(command, str(timeout))
 
+    async def set_mode_timeout_direct(self, post_command: str, value: int) -> bool:
+        """Set timeout directly using POST command to settings.html."""
+        session = await self._get_session()
+        url = f"{self.base_url}/settings.html"  # Timeout settings go to settings.html
+        
+        # Convert to hex format
+        try:
+            hex_command = f"{int(post_command):02x}"
+            hex_value = f"{value:02x}"
+        except ValueError as e:
+            _LOGGER.error(f"Invalid command or value for timeout POST: command={post_command}, value={value}: {e}")
+            return False
+        
+        # Use dictionary for proper application/x-www-form-urlencoded encoding
+        data = {
+            "p_i": hex_command,
+            "p_v": hex_value
+        }
+        
+        _LOGGER.debug(f"Sending timeout POST {post_command} (hex: {hex_command}) with value {value} (hex: {hex_value}) to {url}")
+        _LOGGER.debug(f"POST data: {data}")
+        
+        try:
+            async with session.post(url, data=data) as response:
+                response_text = await response.text()
+                success = response.status == 200
+                
+                _LOGGER.debug(f"Timeout POST {post_command} response status: {response.status}")
+                _LOGGER.debug(f"Timeout POST {post_command} response text: {response_text[:100] if response_text else 'No content'}...")
+                
+                if success:
+                    _LOGGER.debug(f"Timeout POST {post_command} successful")
+                else:
+                    _LOGGER.error(f"Timeout POST {post_command} failed with status {response.status}")
+                return success
+        except Exception as e:
+            _LOGGER.error(f"Error executing timeout POST {post_command} with value {value}: {e}")
+            return False
+
     async def set_mode_airflow(self, mode: str, airflow: int) -> bool:
-        """Set airflow for a specific mode."""
+        """Set airflow for a specific mode. Only Automatic mode supports airflow configuration."""
         mode_airflow_commands = {
             "automatic": POST_AUTOMATIC_MODE_AIRFLOW,
-            "free_cooling": POST_FREE_COOLING_MODE_AIRFLW,
-            "boost": POST_BOOST_MODE_AIRFLOW,
-            "absence": POST_ABSENCE_MODE_AIRFLOW,
-            "stop": POST_STOP_MODE_AIRFLOW,
+            # Only Automatic mode has configurable airflow
+            # Other modes have fixed airflow values in the system
         }
         
         command = mode_airflow_commands.get(mode)

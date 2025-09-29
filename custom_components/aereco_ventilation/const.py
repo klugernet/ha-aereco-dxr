@@ -1,7 +1,7 @@
 """Constants for the Aereco Ventilation System integration."""
 
 DOMAIN = "aereco_ventilation"
-VERSION = "1.1.9"
+VERSION = "1.2.0"
 
 # Default values
 DEFAULT_PORT = 80
@@ -47,15 +47,15 @@ GET_ABOUT_INFO = "59"
 
 # POST Commands
 POST_FILTER_CHANGE_WARN = "0"
-POST_AUTOMATIC_MODE_AIRFLOW = "1"
+POST_AUTOMATIC_MODE_AIRFLOW = "1"  # Only Automatic mode has configurable airflow
 POST_FREE_COOLING_MODE_TIMEOUT = "2"
-POST_FREE_COOLING_MODE_AIRFLW = "3"
+POST_FREE_COOLING_MODE_AIRFLW = "3"  # Keep for potential future use
 POST_BOOST_MODE_TIMEOUT = "4"
-POST_BOOST_MODE_AIRFLOW = "5"
+# POST_BOOST_MODE_AIRFLOW = "5"  # Removed - fixed by system
 POST_ABSENCE_MODE_TIMEOUT = "6"
-POST_ABSENCE_MODE_AIRFLOW = "7"
+# POST_ABSENCE_MODE_AIRFLOW = "7"  # Removed - fixed by system
 POST_STOP_MODE_TIMEOUT = "8"
-POST_STOP_MODE_AIRFLOW = "9"
+# POST_STOP_MODE_AIRFLOW = "9"  # Removed - fixed by system
 POST_SET_POINT_KFACT_FANS = "10"
 POST_SET_POINT_AIRFLOW_CLOGGED = "11"
 POST_SET_POINT_TPREHEATER = "12"
