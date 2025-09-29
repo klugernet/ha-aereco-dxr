@@ -226,15 +226,21 @@ class AerecoModeTimeoutDaysNumber(AerecoBaseNumber):
         if current_mode != 3:  # Absence mode
             return None
         
-        # Try to get the actual system value from modes_config data
-        modes_config = self.coordinator.data.get("modes_config", {})
-        absence_timeout = modes_config.get("absence_timeout")
+        # Try to get the actual system value from current_mode data (same as sensor)
+        mode_data = self.coordinator.data.get("current_mode", {})
+        timeout_value = mode_data.get("timeout")
+        timeout_unit = mode_data.get("timeout_unit", 1)
         
-        if absence_timeout is not None:
-            # Convert system hours to days for display
-            # System returns timeout in hours for Absence mode
-            days_value = round(absence_timeout / 24, 1)
-            return days_value
+        if timeout_value is not None:
+            # Use same conversion logic as Mode Timeout sensor
+            if timeout_unit == 3:  # Days - system returns days directly (for larger values ≥5 days)
+                return timeout_value
+            elif timeout_unit == 2:  # Hours - convert to days (for smaller values ≤4 days)
+                days_value = round(timeout_value / 24, 1)
+                return days_value
+            else:
+                # For other units, fall back to default
+                pass
             
         # Get default timeout value for Absence mode (1 day)
         default_timeout = DEFAULT_TIMEOUT_VALUES.get("3", 1)
